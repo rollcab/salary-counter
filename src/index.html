@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Salary Counter</title>
+  <title>Advanced Salary Counter</title>
   <style>
     :root {
       --bg-color: #000000;
       --text-color: #ffffff;
-      --accent-color: #222222;
+      --accent-color: #1a1a1a;
+      --border-color: #333333;
+      --highlight: #ffffff;
+      --holiday-color: #ff4444;
+      --weekend-color: #331111;
     }
 
     body {
@@ -16,7 +20,7 @@
       padding: 0;
       background-color: var(--bg-color);
       color: var(--text-color);
-      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -27,18 +31,52 @@
 
     /* Huge display for the money */
     #counter {
-      font-size: 12vw;
+      font-size: 10vw;
       font-weight: 700;
       letter-spacing: -2px;
-      text-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
-      font-variant-numeric: tabular-nums; /* Keeps numbers aligned */
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 10px;
     }
 
     #status-message {
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       color: #888;
-      margin-top: 10px;
       font-weight: 300;
+      margin-bottom: 40px;
+      height: 1.5rem;
+    }
+
+    /* Tab Controls */
+    .tabs {
+      display: flex;
+      gap: 15px;
+      background: var(--accent-color);
+      padding: 8px;
+      border-radius: 30px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tab {
+      background: transparent;
+      border: none;
+      color: #888;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 10px 24px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      background: var(--highlight);
+      color: var(--bg-color);
+      box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--text-color);
     }
 
     /* Top right settings button */
@@ -61,39 +99,41 @@
 
     /* Settings Modal overlay */
     #settings-modal {
-      display: none; /* Hidden by default */
+      display: none; 
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
       justify-content: center;
       align-items: center;
       z-index: 100;
     }
 
     .modal-content {
-      background: #111;
-      padding: 40px;
+      background: #0a0a0a;
+      padding: 35px;
       border-radius: 16px;
-      border: 1px solid #333;
+      border: 1px solid var(--border-color);
       width: 100%;
-      max-width: 350px;
-      box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+      max-width: 400px;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .modal-content h2 {
       margin-top: 0;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       font-weight: 500;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     .form-group label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: #aaa;
       font-size: 0.9rem;
     }
@@ -102,17 +142,85 @@
       width: 100%;
       padding: 12px;
       background: var(--accent-color);
-      border: 1px solid #444;
+      border: 1px solid var(--border-color);
       color: var(--text-color);
       border-radius: 8px;
       font-size: 1rem;
       box-sizing: border-box;
       outline: none;
-      transition: border-color 0.2s;
     }
 
-    .form-group input:focus {
-      border-color: #888;
+    .form-group input:focus { border-color: #888; }
+
+    /* Calendar Grid */
+    .calendar-container {
+      margin-bottom: 20px;
+      background: var(--accent-color);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .calendar-header {
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #ccc;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .day-name {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #666;
+      padding-bottom: 5px;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.9rem;
+      background: #222;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .cal-day:hover:not(.empty):not(.weekend) {
+      background: #444;
+    }
+
+    .cal-day.empty {
+      background: transparent;
+      cursor: default;
+    }
+
+    .cal-day.weekend {
+      background: var(--weekend-color);
+      color: #884444;
+      cursor: not-allowed;
+    }
+
+    .cal-day.holiday {
+      background: var(--holiday-color);
+      color: white;
+      font-weight: bold;
+    }
+
+    .calendar-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      margin-top: 10px;
+      color: #888;
     }
 
     button.save-btn {
@@ -126,12 +234,9 @@
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
-      margin-top: 10px;
     }
 
-    button.save-btn:hover {
-      background: #ccc;
-    }
+    button.save-btn:hover { background: #ccc; }
   </style>
 </head>
 <body>
@@ -141,6 +246,12 @@
   <div id="counter">₹0.00</div>
   <div id="status-message">Loading...</div>
 
+  <div class="tabs">
+    <button class="tab" id="tab-dtn" onclick="setView('DTN')">Day (DTN)</button>
+    <button class="tab" id="tab-wtn" onclick="setView('WTN')">Week (WTN)</button>
+    <button class="tab active" id="tab-mtn" onclick="setView('MTN')">Month (MTN)</button>
+  </div>
+
   <div id="settings-modal">
     <div class="modal-content">
       <h2>Configuration</h2>
@@ -148,64 +259,84 @@
         <label>Monthly Salary (Post-Tax)</label>
         <input type="number" id="salary-input" placeholder="e.g. 100000" min="0">
       </div>
-      <div class="form-group">
-        <label>Work Start Time</label>
-        <input type="time" id="start-time-input" value="10:00">
+      <div style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+          <label>Start Time</label>
+          <input type="time" id="start-time-input" value="10:00">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>End Time</label>
+          <input type="time" id="end-time-input" value="18:00">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Work End Time</label>
-        <input type="time" id="end-time-input" value="18:00">
+      
+      <div class="calendar-container">
+        <div class="calendar-header" id="cal-month-year">June 2026</div>
+        <div class="calendar-grid" id="cal-grid">
+          </div>
+        <div class="calendar-legend">
+          <span>Click weekdays to toggle Holidays</span>
+          <span style="color: #ff4444;">■ Holiday</span>
+        </div>
       </div>
-      <button class="save-btn" id="save-btn">Start Counting</button>
+
+      <button class="save-btn" id="save-btn">Save & Start</button>
     </div>
   </div>
 
   <script>
-    // DOM Elements
-    const counterEl = document.getElementById('counter');
-    const statusEl = document.getElementById('status-message');
-    const settingsBtn = document.getElementById('settings-btn');
-    const settingsModal = document.getElementById('settings-modal');
-    const saveBtn = document.getElementById('save-btn');
-    const salaryInput = document.getElementById('salary-input');
-    const startTimeInput = document.getElementById('start-time-input');
-    const endTimeInput = document.getElementById('end-time-input');
-
+    // --- STATE & CONFIG ---
     let intervalId = null;
-
-    // Load saved configs from localStorage
+    let currentView = 'MTN'; // 'DTN', 'WTN', 'MTN'
+    
     let config = {
       salary: parseFloat(localStorage.getItem('sc_salary')) || null,
       startTime: localStorage.getItem('sc_startTime') || '10:00',
-      endTime: localStorage.getItem('sc_endTime') || '18:00'
+      endTime: localStorage.getItem('sc_endTime') || '18:00',
+      holidays: JSON.parse(localStorage.getItem('sc_holidays')) || [] // Array of "YYYY-MM-DD"
     };
 
-    // Initialize the app
+    // --- DOM ELEMENTS ---
+    const counterEl = document.getElementById('counter');
+    const statusEl = document.getElementById('status-message');
+    const settingsModal = document.getElementById('settings-modal');
+    const calGrid = document.getElementById('cal-grid');
+    const calMonthYear = document.getElementById('cal-month-year');
+
+    // --- INITIALIZATION ---
     function init() {
       if (!config.salary) {
         settingsModal.style.display = 'flex';
-        statusEl.innerText = "Awaiting configuration...";
+        renderCalendar();
       } else {
-        salaryInput.value = config.salary;
-        startTimeInput.value = config.startTime;
-        endTimeInput.value = config.endTime;
+        document.getElementById('salary-input').value = config.salary;
+        document.getElementById('start-time-input').value = config.startTime;
+        document.getElementById('end-time-input').value = config.endTime;
+        renderCalendar();
         startCounter();
       }
     }
 
-    // Settings logic
-    settingsBtn.addEventListener('click', () => {
+    // --- UI CONTROLS ---
+    function setView(view) {
+      currentView = view;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(`tab-${view.toLowerCase()}`).classList.add('active');
+      updateDisplay();
+    }
+
+    document.getElementById('settings-btn').addEventListener('click', () => {
+      renderCalendar(); // Refresh calendar to current month
       settingsModal.style.display = 'flex';
     });
 
-    saveBtn.addEventListener('click', () => {
-      const newSalary = parseFloat(salaryInput.value);
-      const newStart = startTimeInput.value;
-      const newEnd = endTimeInput.value;
+    document.getElementById('save-btn').addEventListener('click', () => {
+      const newSalary = parseFloat(document.getElementById('salary-input').value);
+      const newStart = document.getElementById('start-time-input').value;
+      const newEnd = document.getElementById('end-time-input').value;
 
       if (!newSalary || !newStart || !newEnd) {
-        alert("Please fill in all fields.");
-        return;
+        alert("Please fill in all fields."); return;
       }
 
       config.salary = newSalary;
@@ -215,95 +346,181 @@
       localStorage.setItem('sc_salary', newSalary);
       localStorage.setItem('sc_startTime', newStart);
       localStorage.setItem('sc_endTime', newEnd);
+      localStorage.setItem('sc_holidays', JSON.stringify(config.holidays));
 
       settingsModal.style.display = 'none';
       startCounter();
     });
 
-    // Helper: Calculate exact working days in the current month (Mon-Fri)
-    function getWorkingDaysInMonth(year, month) {
-      let days = 0;
-      let date = new Date(year, month, 1);
-      while (date.getMonth() === month) {
-        // 0 is Sunday, 6 is Saturday
-        if (date.getDay() !== 0 && date.getDay() !== 6) {
-          days++;
-        }
-        date.setDate(date.getDate() + 1);
-      }
-      return days;
+    // --- CALENDAR LOGIC ---
+    function formatDateStr(date) {
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     }
 
-    // Helper: Convert "HH:MM" string to a Date object for today
-    function parseTime(timeStr) {
+    function toggleHoliday(dateStr) {
+      const index = config.holidays.indexOf(dateStr);
+      if (index > -1) config.holidays.splice(index, 1);
+      else config.holidays.push(dateStr);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      calMonthYear.innerText = `${monthNames[month]} ${year}`;
+      
+      calGrid.innerHTML = '';
+      const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      dayNames.forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'day-name';
+        div.innerText = day;
+        calGrid.appendChild(div);
+      });
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // Empty slots before 1st of month
+      for (let i = 0; i < firstDay; i++) {
+        const div = document.createElement('div');
+        div.className = 'cal-day empty';
+        calGrid.appendChild(div);
+      }
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const date = new Date(year, month, i);
+        const dateStr = formatDateStr(date);
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const isHoliday = config.holidays.includes(dateStr);
+        
+        const div = document.createElement('div');
+        div.className = 'cal-day';
+        div.innerText = i;
+
+        if (isWeekend) {
+          div.classList.add('weekend');
+          div.title = "Weekend";
+        } else {
+          if (isHoliday) div.classList.add('holiday');
+          div.onclick = () => toggleHoliday(dateStr);
+        }
+        calGrid.appendChild(div);
+      }
+    }
+
+    // --- MATH & DATE HELPERS ---
+    function isWorkingDay(date) {
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+      if (isWeekend) return false;
+      const dateStr = formatDateStr(date);
+      return !config.holidays.includes(dateStr);
+    }
+
+    function getWorkingDaysInMonth(year, month) {
+      let count = 0;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let i = 1; i <= daysInMonth; i++) {
+        if (isWorkingDay(new Date(year, month, i))) count++;
+      }
+      return count || 1; // Prevent division by zero
+    }
+
+    function parseTimeForDate(timeStr, baseDate) {
       const [hours, minutes] = timeStr.split(':').map(Number);
-      const d = new Date();
+      const d = new Date(baseDate);
       d.setHours(hours, minutes, 0, 0);
       return d;
     }
 
-    // Format number to currency (Defaults to INR as requested by profile heuristics, but adaptable)
     function formatMoney(amount) {
       return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        style: 'currency', currency: 'INR',
+        minimumFractionDigits: 2, maximumFractionDigits: 2
       }).format(amount);
     }
 
-    // Core logic to update the counter
+    // --- CORE EARNINGS ENGINE ---
+    
+    // Calculates what was earned strictly on the target Date passed in
+    function getEarningsForSingleDay(targetDate, now, dailySalary, salaryPerMs, startMs, endMs) {
+      if (!isWorkingDay(targetDate)) return 0;
+
+      // If checking a day strictly in the past
+      if (targetDate.toDateString() !== now.toDateString() && targetDate < now) {
+        return dailySalary; 
+      }
+      
+      // If checking today
+      if (targetDate.toDateString() === now.toDateString()) {
+        const start = parseTimeForDate(config.startTime, now);
+        const end = parseTimeForDate(config.endTime, now);
+        
+        if (now < start) return 0;
+        if (now > end) return dailySalary;
+        
+        const elapsed = now - start;
+        return elapsed * salaryPerMs;
+      }
+
+      return 0; // Future
+    }
+
     function updateDisplay() {
       const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
       
-      // Check if it's a weekend
-      const isWeekend = now.getDay() === 0 || now.getDay() === 6;
-      if (isWeekend) {
-        counterEl.innerText = formatMoney(0);
-        statusEl.innerText = "It's the weekend. Enjoy your holiday!";
-        return;
+      const workingDaysThisMonth = getWorkingDaysInMonth(currentYear, currentMonth);
+      const dailySalary = config.salary / workingDaysThisMonth;
+      
+      const startToday = parseTimeForDate(config.startTime, now);
+      const endToday = parseTimeForDate(config.endTime, now);
+      const totalWorkMs = endToday - startToday;
+      const salaryPerMs = dailySalary / totalWorkMs;
+
+      let totalEarned = 0;
+
+      if (currentView === 'DTN') {
+        // Day Till Now
+        totalEarned = getEarningsForSingleDay(now, now, dailySalary, salaryPerMs, startToday, endToday);
+        if (!isWorkingDay(now)) statusEl.innerText = "Holiday/Weekend (₹0 today)";
+        else if (now < startToday) statusEl.innerText = "Work hasn't started yet today.";
+        else if (now > endToday) statusEl.innerText = "Shift complete. Great job today!";
+        else statusEl.innerText = "Earning in progress for today...";
+      } 
+      else if (currentView === 'WTN') {
+        // Week Till Now (Sunday to Saturday)
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay()); // Go back to Sunday
+        
+        for (let d = new Date(startOfWeek); d <= now; d.setDate(d.getDate() + 1)) {
+          totalEarned += getEarningsForSingleDay(d, now, dailySalary, salaryPerMs, startToday, endToday);
+        }
+        statusEl.innerText = "Accumulating this week's earnings (Sun-Sat).";
+      } 
+      else if (currentView === 'MTN') {
+        // Month Till Now (1st to Today)
+        const startOfMonth = new Date(currentYear, currentMonth, 1);
+        
+        for (let d = new Date(startOfMonth); d <= now; d.setDate(d.getDate() + 1)) {
+          totalEarned += getEarningsForSingleDay(d, now, dailySalary, salaryPerMs, startToday, endToday);
+        }
+        statusEl.innerText = "Tracking total monthly progress.";
       }
 
-      const workingDays = getWorkingDaysInMonth(now.getFullYear(), now.getMonth());
-      const dailySalary = config.salary / workingDays;
-
-      const start = parseTime(config.startTime);
-      const end = parseTime(config.endTime);
-
-      if (start >= end) {
-        counterEl.innerText = "Error";
-        statusEl.innerText = "Start time must be before end time.";
-        return;
-      }
-
-      const totalWorkMilliseconds = end - start;
-      const salaryPerMillisecond = dailySalary / totalWorkMilliseconds;
-
-      if (now < start) {
-        // Before work
-        counterEl.innerText = formatMoney(0);
-        statusEl.innerText = "Work hasn't started yet.";
-      } else if (now > end) {
-        // After work
-        counterEl.innerText = formatMoney(dailySalary);
-        statusEl.innerText = "Shift complete. Great job today!";
-      } else {
-        // During work hours - calculate exact earnings so far
-        const elapsedMilliseconds = now - start;
-        const earnedToday = elapsedMilliseconds * salaryPerMillisecond;
-        counterEl.innerText = formatMoney(earnedToday);
-        statusEl.innerText = "Earning in progress...";
-      }
+      counterEl.innerText = formatMoney(totalEarned);
     }
 
     function startCounter() {
       if (intervalId) clearInterval(intervalId);
-      updateDisplay(); // Run immediately so there's no 1-second delay
-      // Set to refresh every 1000ms (1 second) as requested
+      updateDisplay(); 
       intervalId = setInterval(updateDisplay, 1000); 
     }
 
-    // Boot up
     init();
   </script>
 </body>
