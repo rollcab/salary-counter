@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Advanced Salary & Tax Counter</title>
   
+  <!-- Dynamic Favicon Setup -->
+  <link id="favicon" rel="icon" type="image/png" href="rupee.png">
+  
+  <!-- Load the external quote files -->
   <script src="quotes_earnings.js"></script>
   <script src="quotes_tax.js"></script>
 
@@ -21,149 +25,33 @@
       --tax-accent: #6b0f0f;
     }
 
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-      transition: background-color 0.5s ease;
-    }
-
-    body.tax-mode {
-      background-color: var(--tax-bg-color);
-    }
+    body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Arial, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; transition: background-color 0.5s ease; }
+    body.tax-mode { background-color: var(--tax-bg-color); }
 
     /* Mode Toggle */
-    .mode-toggle {
-      display: flex;
-      background: var(--accent-color);
-      padding: 6px;
-      border-radius: 40px;
-      margin-bottom: 30px;
-      border: 1px solid var(--border-color);
-      transition: background 0.5s ease, border-color 0.5s ease;
-    }
+    .mode-toggle { display: flex; background: var(--accent-color); padding: 6px; border-radius: 40px; margin-bottom: 30px; border: 1px solid var(--border-color); transition: background 0.5s ease, border-color 0.5s ease; }
     body.tax-mode .mode-toggle { background: var(--tax-accent); border-color: #8a1c1c; }
-
-    .mode-btn {
-      background: transparent;
-      border: none;
-      color: #888;
-      font-size: 1.1rem;
-      font-weight: 600;
-      padding: 12px 30px;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+    .mode-btn { background: transparent; border: none; color: #888; font-size: 1.1rem; font-weight: 600; padding: 12px 30px; border-radius: 30px; cursor: pointer; transition: all 0.3s ease; }
     body.tax-mode .mode-btn { color: #ffaaaa; }
-
-    .mode-btn.active {
-      background: var(--highlight);
-      color: var(--bg-color);
-      box-shadow: 0 4px 15px rgba(255,255,255,0.2);
-    }
+    .mode-btn.active { background: var(--highlight); color: var(--bg-color); box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
 
     /* Counter Display */
-    #counter {
-      font-size: 10vw;
-      font-weight: 700;
-      letter-spacing: -2px;
-      text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
-      font-variant-numeric: tabular-nums;
-      margin-bottom: 10px;
-      text-align: center;
-      width: 100%;
-      box-sizing: border-box;
-      padding: 0 20px;
-      transition: color 0.5s ease;
-    }
-
-    /* Banter Quote Display */
-    #status-message {
-      font-size: 1.2rem;
-      color: #888;
-      font-weight: 400;
-      margin-bottom: 40px;
-      height: 1.5rem;
-      text-align: center;
-      transition: color 0.5s ease;
-      max-width: 80%;
-    }
+    #counter { font-size: 10vw; font-weight: 700; letter-spacing: -2px; text-shadow: 0 0 40px rgba(255, 255, 255, 0.15); font-variant-numeric: tabular-nums; margin-bottom: 10px; text-align: center; width: 100%; box-sizing: border-box; padding: 0 20px; transition: color 0.5s ease; }
+    #status-message { font-size: 1.2rem; color: #888; font-weight: 400; margin-bottom: 40px; height: 1.5rem; text-align: center; transition: color 0.5s ease; max-width: 80%; }
     body.tax-mode #status-message { color: #ffcccc; }
 
     /* Tabs & Tooltips */
-    .tabs {
-      display: flex;
-      gap: 15px;
-      background: var(--accent-color);
-      padding: 8px;
-      border-radius: 30px;
-      border: 1px solid var(--border-color);
-      transition: background 0.5s ease, border-color 0.5s ease;
-    }
+    .tabs { display: flex; gap: 15px; background: var(--accent-color); padding: 8px; border-radius: 30px; border: 1px solid var(--border-color); transition: background 0.5s ease, border-color 0.5s ease; }
     body.tax-mode .tabs { background: var(--tax-accent); border-color: #8a1c1c; }
-
-    .tab {
-      position: relative; /* Required for tooltip positioning */
-      background: transparent;
-      border: none;
-      color: #888;
-      font-size: 1rem;
-      font-weight: 500;
-      padding: 10px 24px;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+    .tab { position: relative; background: transparent; border: none; color: #888; font-size: 1rem; font-weight: 500; padding: 10px 24px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; }
     body.tax-mode .tab { color: #ffaaaa; }
-
-    .tab.active {
-      background: var(--highlight);
-      color: var(--bg-color);
-      box-shadow: 0 4px 15px rgba(255,255,255,0.2);
-    }
+    .tab.active { background: var(--highlight); color: var(--bg-color); box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
     .tab:hover:not(.active) { color: var(--text-color); }
+    .tab::after { content: attr(data-current-tooltip); position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); background-color: #222; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; pointer-events: none; border: 1px solid #444; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    body.tax-mode .tab::after { background-color: #441111; border-color: #883333; color: #ffcccc; }
+    .tab:hover::after { opacity: 1; visibility: visible; }
 
-    /* Custom Tooltip UX */
-    .tab::after {
-      content: attr(data-current-tooltip);
-      position: absolute;
-      bottom: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #222;
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      white-space: nowrap;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s ease, visibility 0.2s ease;
-      pointer-events: none;
-      border: 1px solid #444;
-      z-index: 10;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    }
-    body.tax-mode .tab::after {
-      background-color: #441111;
-      border-color: #883333;
-      color: #ffcccc;
-    }
-    .tab:hover::after {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    /* Settings Button & Modal (Truncated for brevity, kept exactly same as previous) */
+    /* Settings Button & Modal */
     #settings-btn { position: absolute; top: 30px; right: 40px; background: none; border: none; color: #666; font-size: 2rem; cursor: pointer; transition: all 0.3s ease; }
     #settings-btn:hover { color: var(--text-color); transform: rotate(45deg); }
     #settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); justify-content: center; align-items: center; z-index: 100; }
@@ -199,22 +87,12 @@
   <div id="status-message">Loading...</div>
 
   <div class="tabs">
-    <button class="tab" id="tab-dtn" 
-            data-net-tooltip="Earning in-progress today..." 
-            data-tax-tooltip="Paid to government so-far today..." 
-            onclick="setTimeView('DTN')">Day (DTN)</button>
-    
-    <button class="tab" id="tab-wtn" 
-            data-net-tooltip="Accumulating this week's earnings (Sun-Sat)" 
-            data-tax-tooltip="Accumulating this week's tax spend (Sun-Sat)" 
-            onclick="setTimeView('WTN')">Week (WTN)</button>
-    
-    <button class="tab active" id="tab-mtn" 
-            data-net-tooltip="Tracking total monthly progress" 
-            data-tax-tooltip="Tracking total monthly tax progress" 
-            onclick="setTimeView('MTN')">Month (MTN)</button>
+    <button class="tab" id="tab-dtn" data-net-tooltip="Earning in-progress today..." data-tax-tooltip="Paid to government so-far today..." onclick="setTimeView('DTN')">Day (DTN)</button>
+    <button class="tab" id="tab-wtn" data-net-tooltip="Accumulating this week's earnings (Sun-Sat)" data-tax-tooltip="Accumulating this week's tax spend (Sun-Sat)" onclick="setTimeView('WTN')">Week (WTN)</button>
+    <button class="tab active" id="tab-mtn" data-net-tooltip="Tracking total monthly progress" data-tax-tooltip="Tracking total monthly tax progress" onclick="setTimeView('MTN')">Month (MTN)</button>
   </div>
 
+  <!-- Settings Modal -->
   <div id="settings-modal">
     <div class="modal-content">
       <h2>Configuration</h2>
@@ -274,12 +152,9 @@
     let intervalId = null;
     let timeView = 'MTN'; 
     let trackingMode = 'NET'; 
-    
-    // Variables to hold the randomly selected quotes for the session
     let currentNetQuote = "";
     let currentTaxQuote = "";
 
-    // Fallback if the JS files fail to load
     const fallbackNet = ["Tracking your earnings..."];
     const fallbackTax = ["Tracking your tax..."];
     const netArray = (typeof earningQuotes !== 'undefined') ? earningQuotes : fallbackNet;
@@ -300,6 +175,21 @@
     const settingsModal = document.getElementById('settings-modal');
     const calGrid = document.getElementById('cal-grid');
     const calMonthYear = document.getElementById('cal-month-year');
+    const faviconEl = document.getElementById('favicon');
+
+    // --- Dynamic Favicon Logic ---
+    function updateFavicon(currencyCode) {
+      const iconMap = {
+        'INR': 'rupee.png',
+        'USD': 'dollar.png',
+        'EUR': 'euro.png',
+        'JPY': 'yen.png',
+        'GBP': 'pound.png'
+      };
+      if (iconMap[currencyCode]) {
+        faviconEl.href = iconMap[currencyCode];
+      }
+    }
 
     function selectRandomQuotes() {
       currentNetQuote = netArray[Math.floor(Math.random() * netArray.length)];
@@ -307,8 +197,7 @@
     }
 
     function updateTooltips() {
-      const tabs = document.querySelectorAll('.tab');
-      tabs.forEach(tab => {
+      document.querySelectorAll('.tab').forEach(tab => {
         if (trackingMode === 'NET') {
           tab.setAttribute('data-current-tooltip', tab.getAttribute('data-net-tooltip'));
         } else {
@@ -320,6 +209,7 @@
     function init() {
       selectRandomQuotes();
       updateTooltips();
+      updateFavicon(config.currency); // Set favicon on load
       
       if (!config.salary) {
         settingsModal.style.display = 'flex';
@@ -366,12 +256,13 @@
       const newTax = parseFloat(document.getElementById('tax-input').value) || 0;
       const newStart = document.getElementById('start-time-input').value;
       const newEnd = document.getElementById('end-time-input').value;
+      const newCurrency = document.getElementById('currency-input').value;
       
       if (!newSalary || !newStart || !newEnd) { alert("Please fill in required fields."); return; }
 
       config.salary = newSalary; config.tax = newTax;
       config.startTime = newStart; config.endTime = newEnd;
-      config.currency = document.getElementById('currency-input').value;
+      config.currency = newCurrency;
       config.formatSystem = document.getElementById('format-input').value;
 
       localStorage.setItem('sc_salary', config.salary);
@@ -382,29 +273,21 @@
       localStorage.setItem('sc_formatSystem', config.formatSystem);
       localStorage.setItem('sc_holidays', JSON.stringify(config.holidays));
 
+      updateFavicon(config.currency); // Update favicon instantly after save
       settingsModal.style.display = 'none';
       startCounter();
     });
 
     function formatDateStr(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
+    function toggleHoliday(dateStr) { const index = config.holidays.indexOf(dateStr); if (index > -1) config.holidays.splice(index, 1); else config.holidays.push(dateStr); renderCalendar(); }
     
-    function toggleHoliday(dateStr) {
-      const index = config.holidays.indexOf(dateStr);
-      if (index > -1) config.holidays.splice(index, 1);
-      else config.holidays.push(dateStr);
-      renderCalendar();
-    }
-
     function renderCalendar() {
       const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       calMonthYear.innerText = `${monthNames[month]} ${year}`;
       calGrid.innerHTML = '';
-      ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => {
-        const div = document.createElement('div'); div.className = 'day-name'; div.innerText = day; calGrid.appendChild(div);
-      });
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => { const div = document.createElement('div'); div.className = 'day-name'; div.innerText = day; calGrid.appendChild(div); });
+      const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
       for (let i = 0; i < firstDay; i++) { const div = document.createElement('div'); div.className = 'cal-day empty'; calGrid.appendChild(div); }
       for (let i = 1; i <= daysInMonth; i++) {
         const date = new Date(year, month, i); const dateStr = formatDateStr(date);
@@ -412,10 +295,7 @@
         const isHoliday = config.holidays.includes(dateStr);
         const div = document.createElement('div'); div.className = 'cal-day'; div.innerText = i;
         if (isWeekend) div.classList.add('weekend');
-        else {
-          if (isHoliday) div.classList.add('holiday');
-          div.onclick = () => toggleHoliday(dateStr);
-        }
+        else { if (isHoliday) div.classList.add('holiday'); div.onclick = () => toggleHoliday(dateStr); }
         calGrid.appendChild(div);
       }
     }
@@ -438,9 +318,7 @@
     }
 
     function formatMoney(amount, isTaxMode) {
-      const formatted = new Intl.NumberFormat(config.formatSystem, {
-        style: 'currency', currency: config.currency, minimumFractionDigits: 2, maximumFractionDigits: 2
-      }).format(amount);
+      const formatted = new Intl.NumberFormat(config.formatSystem, { style: 'currency', currency: config.currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
       return isTaxMode ? `-${formatted}` : formatted;
     }
 
@@ -448,10 +326,8 @@
       if (!isWorkingDay(targetDate)) return 0;
       if (targetDate.toDateString() !== now.toDateString() && targetDate < now) return dailyAmount; 
       if (targetDate.toDateString() === now.toDateString()) {
-        const start = parseTimeForDate(config.startTime, now);
-        const end = parseTimeForDate(config.endTime, now);
-        if (now < start) return 0;
-        if (now > end) return dailyAmount;
+        const start = parseTimeForDate(config.startTime, now); const end = parseTimeForDate(config.endTime, now);
+        if (now < start) return 0; if (now > end) return dailyAmount;
         return (now - start) * amountPerMs;
       }
       return 0;
@@ -481,13 +357,11 @@
 
       counterEl.innerText = formatMoney(totalAccumulated, trackingMode === 'TAX');
       
-      // Update Quote/Status
       if (!isWorkingDay(now)) {
         statusEl.innerText = "Holiday/Weekend (Zero movement today)";
       } else if (now < startToday || now > endToday) {
         statusEl.innerText = trackingMode === 'TAX' ? "Tax extraction paused (off-hours)." : "Earning paused (off-hours).";
       } else {
-        // Show the random quote generated on page load!
         statusEl.innerText = trackingMode === 'TAX' ? currentTaxQuote : currentNetQuote;
       }
     }
