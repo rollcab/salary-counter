@@ -16,7 +16,7 @@ const taxQuotes = [
   "Donating to the 'Save the Politicians' fund.",
   "Sponsoring the next startup bailout.",
   "Your taxes at work (somewhere, theoretically).",
-  "Funding a foreign "study tour" for government officials.",
+  "Funding a foreign 'study tour' for government officials.",
   "Paying for a bridge that might collapse next monsoon.",
   "Helping the government buy more paper to print forms on.",
   "Sponsoring a very important ribbon-cutting ceremony.",
