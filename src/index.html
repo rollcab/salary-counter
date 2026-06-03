@@ -37,6 +37,10 @@
       text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
       font-variant-numeric: tabular-nums;
       margin-bottom: 10px;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 20px;
     }
 
     #status-message {
@@ -138,7 +142,7 @@
       font-size: 0.9rem;
     }
 
-    .form-group input {
+    .form-group input, .form-group select {
       width: 100%;
       padding: 12px;
       background: var(--accent-color);
@@ -150,7 +154,7 @@
       outline: none;
     }
 
-    .form-group input:focus { border-color: #888; }
+    .form-group input:focus, .form-group select:focus { border-color: #888; }
 
     /* Calendar Grid */
     .calendar-container {
@@ -259,6 +263,27 @@
         <label>Monthly Salary (Post-Tax)</label>
         <input type="number" id="salary-input" placeholder="e.g. 100000" min="0">
       </div>
+      
+      <div style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+          <label>Currency Symbol</label>
+          <select id="currency-input">
+            <option value="INR">₹ (INR)</option>
+            <option value="USD">$ (USD)</option>
+            <option value="EUR">€ (EUR)</option>
+            <option value="JPY">¥ (JPY)</option>
+            <option value="GBP">£ (GBP)</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Number System</label>
+          <select id="format-input">
+            <option value="en-IN">Lakhs/Crores</option>
+            <option value="en-US">Millions/Billions</option>
+          </select>
+        </div>
+      </div>
+
       <div style="display: flex; gap: 10px;">
         <div class="form-group" style="flex: 1;">
           <label>Start Time</label>
@@ -271,9 +296,8 @@
       </div>
       
       <div class="calendar-container">
-        <div class="calendar-header" id="cal-month-year">June 2026</div>
-        <div class="calendar-grid" id="cal-grid">
-          </div>
+        <div class="calendar-header" id="cal-month-year"></div>
+        <div class="calendar-grid" id="cal-grid"></div>
         <div class="calendar-legend">
           <span>Click weekdays to toggle Holidays</span>
           <span style="color: #ff4444;">■ Holiday</span>
@@ -287,13 +311,15 @@
   <script>
     // --- STATE & CONFIG ---
     let intervalId = null;
-    let currentView = 'MTN'; // 'DTN', 'WTN', 'MTN'
+    let currentView = 'MTN';
     
     let config = {
       salary: parseFloat(localStorage.getItem('sc_salary')) || null,
       startTime: localStorage.getItem('sc_startTime') || '10:00',
       endTime: localStorage.getItem('sc_endTime') || '18:00',
-      holidays: JSON.parse(localStorage.getItem('sc_holidays')) || [] // Array of "YYYY-MM-DD"
+      currency: localStorage.getItem('sc_currency') || 'INR',
+      formatSystem: localStorage.getItem('sc_formatSystem') || 'en-IN',
+      holidays: JSON.parse(localStorage.getItem('sc_holidays')) || []
     };
 
     // --- DOM ELEMENTS ---
@@ -312,6 +338,8 @@
         document.getElementById('salary-input').value = config.salary;
         document.getElementById('start-time-input').value = config.startTime;
         document.getElementById('end-time-input').value = config.endTime;
+        document.getElementById('currency-input').value = config.currency;
+        document.getElementById('format-input').value = config.formatSystem;
         renderCalendar();
         startCounter();
       }
@@ -326,7 +354,7 @@
     }
 
     document.getElementById('settings-btn').addEventListener('click', () => {
-      renderCalendar(); // Refresh calendar to current month
+      renderCalendar();
       settingsModal.style.display = 'flex';
     });
 
@@ -334,6 +362,8 @@
       const newSalary = parseFloat(document.getElementById('salary-input').value);
       const newStart = document.getElementById('start-time-input').value;
       const newEnd = document.getElementById('end-time-input').value;
+      const newCurrency = document.getElementById('currency-input').value;
+      const newFormat = document.getElementById('format-input').value;
 
       if (!newSalary || !newStart || !newEnd) {
         alert("Please fill in all fields."); return;
@@ -342,10 +372,14 @@
       config.salary = newSalary;
       config.startTime = newStart;
       config.endTime = newEnd;
+      config.currency = newCurrency;
+      config.formatSystem = newFormat;
 
       localStorage.setItem('sc_salary', newSalary);
       localStorage.setItem('sc_startTime', newStart);
       localStorage.setItem('sc_endTime', newEnd);
+      localStorage.setItem('sc_currency', newCurrency);
+      localStorage.setItem('sc_formatSystem', newFormat);
       localStorage.setItem('sc_holidays', JSON.stringify(config.holidays));
 
       settingsModal.style.display = 'none';
@@ -384,7 +418,6 @@
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-      // Empty slots before 1st of month
       for (let i = 0; i < firstDay; i++) {
         const div = document.createElement('div');
         div.className = 'cal-day empty';
@@ -403,7 +436,6 @@
 
         if (isWeekend) {
           div.classList.add('weekend');
-          div.title = "Weekend";
         } else {
           if (isHoliday) div.classList.add('holiday');
           div.onclick = () => toggleHoliday(dateStr);
@@ -426,7 +458,7 @@
       for (let i = 1; i <= daysInMonth; i++) {
         if (isWorkingDay(new Date(year, month, i))) count++;
       }
-      return count || 1; // Prevent division by zero
+      return count || 1;
     }
 
     function parseTimeForDate(timeStr, baseDate) {
@@ -437,24 +469,22 @@
     }
 
     function formatMoney(amount) {
-      return new Intl.NumberFormat('en-IN', {
-        style: 'currency', currency: 'INR',
-        minimumFractionDigits: 2, maximumFractionDigits: 2
+      return new Intl.NumberFormat(config.formatSystem, {
+        style: 'currency', 
+        currency: config.currency,
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2
       }).format(amount);
     }
 
     // --- CORE EARNINGS ENGINE ---
-    
-    // Calculates what was earned strictly on the target Date passed in
-    function getEarningsForSingleDay(targetDate, now, dailySalary, salaryPerMs, startMs, endMs) {
+    function getEarningsForSingleDay(targetDate, now, dailySalary, salaryPerMs) {
       if (!isWorkingDay(targetDate)) return 0;
 
-      // If checking a day strictly in the past
       if (targetDate.toDateString() !== now.toDateString() && targetDate < now) {
         return dailySalary; 
       }
       
-      // If checking today
       if (targetDate.toDateString() === now.toDateString()) {
         const start = parseTimeForDate(config.startTime, now);
         const end = parseTimeForDate(config.endTime, now);
@@ -462,11 +492,10 @@
         if (now < start) return 0;
         if (now > end) return dailySalary;
         
-        const elapsed = now - start;
-        return elapsed * salaryPerMs;
+        return (now - start) * salaryPerMs;
       }
 
-      return 0; // Future
+      return 0;
     }
 
     function updateDisplay() {
@@ -485,31 +514,28 @@
       let totalEarned = 0;
 
       if (currentView === 'DTN') {
-        // Day Till Now
-        totalEarned = getEarningsForSingleDay(now, now, dailySalary, salaryPerMs, startToday, endToday);
-        if (!isWorkingDay(now)) statusEl.innerText = "Holiday/Weekend (₹0 today)";
-        else if (now < startToday) statusEl.innerText = "Work hasn't started yet today.";
-        else if (now > endToday) statusEl.innerText = "Shift complete. Great job today!";
-        else statusEl.innerText = "Earning in progress for today...";
+        totalEarned = getEarningsForSingleDay(now, now, dailySalary, salaryPerMs);
+        if (!isWorkingDay(now)) statusEl.innerText = "Holiday/Weekend (Zero earnings today)";
+        else if (now < startToday) statusEl.innerText = "Work session hasn't begun yet.";
+        else if (now > endToday) statusEl.innerText = "Daily shift complete.";
+        else statusEl.innerText = "Tracking current day metrics...";
       } 
       else if (currentView === 'WTN') {
-        // Week Till Now (Sunday to Saturday)
         const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay()); // Go back to Sunday
+        startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
         
         for (let d = new Date(startOfWeek); d <= now; d.setDate(d.getDate() + 1)) {
-          totalEarned += getEarningsForSingleDay(d, now, dailySalary, salaryPerMs, startToday, endToday);
+          totalEarned += getEarningsForSingleDay(d, now, dailySalary, salaryPerMs);
         }
-        statusEl.innerText = "Accumulating this week's earnings (Sun-Sat).";
+        statusEl.innerText = "Tracking current week metrics (Sun-Sat).";
       } 
       else if (currentView === 'MTN') {
-        // Month Till Now (1st to Today)
         const startOfMonth = new Date(currentYear, currentMonth, 1);
         
         for (let d = new Date(startOfMonth); d <= now; d.setDate(d.getDate() + 1)) {
-          totalEarned += getEarningsForSingleDay(d, now, dailySalary, salaryPerMs, startToday, endToday);
+          totalEarned += getEarningsForSingleDay(d, now, dailySalary, salaryPerMs);
         }
-        statusEl.innerText = "Tracking total monthly progress.";
+        statusEl.innerText = "Tracking current monthly accumulation.";
       }
 
       counterEl.innerText = formatMoney(totalEarned);
